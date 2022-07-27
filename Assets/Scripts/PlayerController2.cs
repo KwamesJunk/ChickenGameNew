@@ -76,37 +76,11 @@ public class PlayerController2 : MonoBehaviour
             //isAttacking = true;
         }
 
+        //// Gamepad
         UpdateController();
 
-        // Tank Controls
-        //Vector3 direction = transform.rotation * Vector3.forward;
-        //transform.position = transform.position + (direction * (speed * 10) * Time.deltaTime);
 
-        //if (ForwardInput()) { // Forward
-        //    speed += 1.0f * Time.deltaTime;
-        //    if (speed > 0.5f) speed = 0.5f;
-        //}
-        ////else if (BackwardInput()) { // Backward
-        ////    speed -= 1.0f * Time.deltaTime;
-        ////    if (speed < -0.5f) speed = -0.5f;
-        ////}
-        //else if (BackwardInput()) { // Backward
-        //    transform.Rotate(new Vector3(0.0f, 180.0f, 0.0f));
-        //}
-        //else {
-        //    speed = 0.9f * speed;
-        //}
-
-        //// Rotation
-        //if (LeftInput()) {
-        //    transform.Rotate(new Vector3(0.0f, -180.0f * Time.deltaTime, 0.0f));
-        //}
-        //if (RightInput()) {
-        //    transform.Rotate(new Vector3(0.0f, 180.0f * Time.deltaTime, 0.0f));
-        //}
-
-        // Direct Controls
-
+        // WASD Controls
         if (Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.S) || (ForwardInput() && BackwardInput())) {
             velocity.z = 0.0f;
         }
@@ -177,24 +151,15 @@ public class PlayerController2 : MonoBehaviour
         }
 
         Rigidbody rb = GetComponent<Rigidbody>();
-        //transform.position = transform.position+velocity;
-        Vector3 tempVel = rb.velocity;
-        tempVel.x = velocity.x * 100;
-        tempVel.z = velocity.z * 100;
-        tempVel.y -= 0.1f; // gravity adjustment (THIS IS GREAT!!)
-        rb.velocity = tempVel;
-        //rb.AddForce(100*velocity, ForceMode.Impulse);
+        //Vector3 tempVel = rb.velocity;
+        //tempVel.x = velocity.x * 100;
+        //tempVel.z = velocity.z * 100;
+        //tempVel.y -= 0.1f; // gravity adjustment (THIS IS GREAT!!)
+        //rb.velocity = tempVel;
 
         if (Input.GetKeyDown(KeyCode.Space)) {
-            //GameObject chicken = GameObject.FindGameObjectWithTag("Chicken");
-            //chicken.GetComponent<ChickenController>().Hop();
             KnockDown();
-            //Vector3 pos = transform.position;
-            //pos.y = 10.0f;
-            //transform.position = pos;
         }
-
-        //animator.SetFloat("Speed", Mathf.Abs(velocity.magnitude * 10.0f));
 
         if (Input.GetKeyDown(KeyCode.Z)) {
 
@@ -211,24 +176,22 @@ public class PlayerController2 : MonoBehaviour
             print("Get Hit animation");
         }
 
+        //if (Mathf.Abs(stickX) < 0.1f) stickX = 0.0f;
+        //if (Mathf.Abs(stickZ) < 0.1f) stickZ = 0.0f;
+
         float yy = rb.velocity.y;
-        rb.velocity = new Vector3(stickX*speed2, yy, stickZ*speed2);
+        rb.velocity = new Vector3(stickX * speed2, yy, stickZ * speed2);
+        rb.AddForce(Vector3.down * 10.0f); // gravity adjustment (THIS IS GREAT!!)
         animator.SetFloat("Speed", Mathf.Abs(rb.velocity.magnitude / speed2));
 
         if (stickX + stickZ != 0) {
-            //if (stickX > 0 && stickZ > 0) {
-
-            //}
             float yAngle = Mathf.Atan2(stickX, stickZ) * 180.0f / Mathf.PI; // this will change to targetAngle
-            //Quaternion rotation = new Quaternion();
-            //rotation.eulerAngles = new Vector3(0, yAngle, 0);
-            //transform.rotation = rotation;
 
-            targetDirection = yAngle + 180.0f;
+            targetDirection = yAngle;
         }
 
         RotateTowardTarget(targetDirection, turnSpeed);
- 
+
     } // end Update
 
     void KnockdownAnimation()
@@ -447,22 +410,29 @@ public class PlayerController2 : MonoBehaviour
     {
         KnockDown();
     }
-
+    
     void RotateTowardTarget(float targetYRot, float degPerSec)
     {
-        float targetYRotMod = targetYRot % 360.0f;
+
+
+        float targetY = (targetYRot + 360) % 360.0f; // remove negative values and change to [0,360)
         Vector3 eulerAngles = transform.rotation.eulerAngles;
-        float diff = eulerAngles.y - targetYRot;
+        float eulerY = eulerAngles.y;
+        float diff = eulerY - targetY;
+
+        float degrees = degPerSec * Time.deltaTime;
 
         // check size of diff here and adjust
+        if (Mathf.Abs(diff) < degrees) {
+            transform.rotation = Quaternion.Euler(0.0f, targetY, 0.0f);
+            return;
+        }
 
-        if (diff < 0.0f) diff += 360.0f;
-
-        if (diff < 180) {
-            transform.Rotate(new Vector3(0.0f, degPerSec * Time.deltaTime, 0.0f));
+        if (diff < 0) {
+            transform.Rotate(new Vector3(0.0f, degrees, 0.0f));
         }
         else {
-            transform.Rotate(new Vector3(0.0f, -degPerSec * Time.deltaTime, 0.0f));
+            transform.Rotate(new Vector3(0.0f, -degrees, 0.0f));
         }
     }
 
