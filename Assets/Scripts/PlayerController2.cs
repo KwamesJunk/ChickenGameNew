@@ -64,6 +64,7 @@ public class PlayerController2 : MonoBehaviour
         
     }
 
+    float tk = 0.0f;
     // Update is called once per frame
     void Update()
     {
@@ -181,16 +182,30 @@ public class PlayerController2 : MonoBehaviour
 
         float yy = rb.velocity.y;
         rb.velocity = new Vector3(stickX * speed2, yy, stickZ * speed2);
-        rb.AddForce(Vector3.down * 10.0f); // gravity adjustment (THIS IS GREAT!!)
+        rb.AddForce(Vector3.down * 20.0f); // gravity adjustment (THIS IS GREAT!!)
         animator.SetFloat("Speed", Mathf.Abs(rb.velocity.magnitude / speed2));
 
         if (stickX + stickZ != 0) {
             float yAngle = Mathf.Atan2(stickX, stickZ) * 180.0f / Mathf.PI; // this will change to targetAngle
 
+            if (yAngle < 0) yAngle += 360;
             targetDirection = yAngle;
         }
 
-        RotateTowardTarget(targetDirection, turnSpeed);
+        //RotateTowardTarget(targetDirection, turnSpeed);
+        RotateTowardTarget();
+
+        //transform.Rotate(new Vector3(0.0f, 30.0f * Time.deltaTime, 0.0f));
+        //if (Time.time - tk > 0.5f) {
+        //    tk = Time.time;
+
+        //    float eulerY = transform.rotation.eulerAngles.y;
+        //    //if (eulerY > 180.0f) {
+        //    //    eulerY = eulerY;
+        //    //}
+        //    //print("Current Y Angle: "+eulerY);
+        //    print("Current Target Dir: "+targetDirection);
+        //}
 
     } // end Update
 
@@ -422,9 +437,12 @@ public class PlayerController2 : MonoBehaviour
 
         float degrees = degPerSec * Time.deltaTime;
 
+        print("eulerY: " + eulerY + " targetYRot: " + targetYRot + " diff: " + diff);
+
         // check size of diff here and adjust
         if (Mathf.Abs(diff) < degrees) {
             transform.rotation = Quaternion.Euler(0.0f, targetY, 0.0f);
+            //print("Direct angle assignment");
             return;
         }
 
@@ -433,6 +451,32 @@ public class PlayerController2 : MonoBehaviour
         }
         else {
             transform.Rotate(new Vector3(0.0f, -degrees, 0.0f));
+        }
+    }
+
+    void RotateTowardTarget() // assumes that angles are [0, 360)
+    {
+        //print("Target: " + targetDirection + " Current: " + (transform.rotation.eulerAngles.y-0.0f));
+        float diff = targetDirection - transform.rotation.eulerAngles.y;
+        float degreesThisFrame = turnSpeed * Time.deltaTime;
+
+        if (Mathf.Abs(diff) <= degreesThisFrame) {
+            //RotateImmediately(targetDirection);
+            return;
+        }
+
+       // There's probably a better way to do this
+        if (diff > 0.0f) {
+            if (diff < 180.0f)
+                transform.Rotate(new Vector3(0.0f, 360.0f * Time.deltaTime, 0.0f)); // positive and under 180 (+)
+            else
+                transform.Rotate(new Vector3(0.0f, -360.0f * Time.deltaTime, 0.0f)); // positive and over 180 (-)
+        }
+        else {
+            if (diff < -180.0f)
+                transform.Rotate(new Vector3(0.0f, 360.0f * Time.deltaTime, 0.0f)); // negative and under -180 (+)
+            else
+                transform.Rotate(new Vector3(0.0f, -360.0f * Time.deltaTime, 0.0f)); // negative and over -180 (-)
         }
     }
 
