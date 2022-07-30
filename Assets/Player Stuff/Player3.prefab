@@ -2868,6 +2868,7 @@ GameObject:
   - component: {fileID: 2565843151120575919}
   - component: {fileID: 8209533278208992551}
   - component: {fileID: 365116082529745917}
+  - component: {fileID: 2277455693995765994}
   - component: {fileID: -6978802293040784392}
   - component: {fileID: 1168349051219098222}
   - component: {fileID: 3683262674678615330}
@@ -2928,6 +2929,7 @@ MonoBehaviour:
   lifeBar: {fileID: 0}
   speed2: 1
   turnSpeed: 1080
+  pauseController: {fileID: 0}
 --- !u!114 &8209533278208992551
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2964,6 +2966,18 @@ MonoBehaviour:
   - {fileID: 3787981811663943813}
   - {fileID: 3787981811663944021}
   - {fileID: 3787981811663943937}
+--- !u!114 &2277455693995765994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8133750573954069342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33dd9fea14c6f194b8b5195bcc7aa935, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!95 &-6978802293040784392
 Animator:
   serializedVersion: 4

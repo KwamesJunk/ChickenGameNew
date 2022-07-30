@@ -25,7 +25,7 @@ public class BigChickenAttack : MonoBehaviour
         Transform parentTransform = other.transform.root;
 
         if (parentTransform.gameObject == transform.root.gameObject) {
-            print("Hit Self");
+            //print("Hit Self");
             return;
         }
         if (other.tag == "Chicken") {

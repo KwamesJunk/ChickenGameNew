@@ -164,7 +164,7 @@ public class BigChicken : ChickenBase
                 hitForce.y = 1.0f;
                 hitForce *= 500;
                 GetComponent<Rigidbody>().AddForce(hitForce, ForceMode.Impulse);
-                print(hitForce);
+                //print(hitForce);
 
                 //temporary kludge 
                 // 2022/7/13: What the Hell is this? What?

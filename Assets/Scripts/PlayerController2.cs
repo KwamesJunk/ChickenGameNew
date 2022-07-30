@@ -15,37 +15,36 @@ public class PlayerController2 : MonoBehaviour
     [SerializeField] Image lifeBar;
     [SerializeField] [Range(1, 20)] float speed2;
     [SerializeField] float turnSpeed;
+    
 
     Animator animator;
-    BoxCollider attackBox;
+    PauseController pauseController;
+    //BoxCollider attackBox;
     bool isAttacking = false;
     Vector3 velocity;
     int score = 0;
-    //int life = 100;
     HitPoints hp;
     float stickX, stickZ;
-    const float ROOT_3 = 1.7320508075688772935274463415059f;
-    float targetDirection = 180.0f;
+    float targetDirection = 0.0f;
 
 
 
     private void Awake()
     {
-        attackBox = GetComponent<BoxCollider>();
+        //attackBox = GetComponent<BoxCollider>();
         Physics.IgnoreLayerCollision(3, 3);
         Physics.IgnoreLayerCollision(3, 6);
         Physics.IgnoreLayerCollision(7, 7);
         Physics.IgnoreLayerCollision(7, 8);
-        //Physics.IgnoreLayerCollision(6, 7);
-        //Physics.IgnoreLayerCollision(6, 6);
+
         velocity = Vector3.zero;
     }
     // Start is called before the first frame update
     void Start()
     {
         animator = GetComponent<Animator>();
+        pauseController = GetComponent<PauseController>();
 
-        //StartCoroutine(RaycastCoroutine());
         StartCoroutine(TestController());
 
         // Set up HitPoint component
@@ -64,17 +63,17 @@ public class PlayerController2 : MonoBehaviour
         
     }
 
-    float tk = 0.0f;
     // Update is called once per frame
     void Update()
     {
+        if (pauseController.IsPaused()) return;
+
         if (transform.position.y < -15) {
             transform.position = new Vector3(0, 10, 0);
         }
 
         if (Input.GetMouseButtonDown(0) && !animator.GetBool("SwingSword")) {
             animator.SetTrigger("SwingSword");
-            //isAttacking = true;
         }
 
         //// Gamepad
@@ -82,18 +81,12 @@ public class PlayerController2 : MonoBehaviour
 
 
         // WASD Controls
-        if (Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.S) || (ForwardInput() && BackwardInput())) {
+        if (Input.GetKeyUp(Global.UP_KEY) || Input.GetKeyUp(Global.DOWN_KEY) || (ForwardInput() && BackwardInput())) {
             velocity.z = 0.0f;
         }
         else if (ForwardInput()) {
             velocity.z += acceleration;// * Time.deltaTime;
             if (velocity.z > speed) velocity.z = speed;
-
-            //Quaternion rotation = new Quaternion();
-            //rotation.eulerAngles = new Vector3(0.0f, 0.0f, 0.0f);
-            //transform.rotation = rotation;
-
-            //RotateImmediately(0.0f);
 
             stickZ = 1;
         }
@@ -101,12 +94,6 @@ public class PlayerController2 : MonoBehaviour
         if (BackwardInput()) {
             velocity.z -= acceleration;// * Time.deltaTime;
             if (velocity.z < -speed) velocity.z = -speed;
-
-            //Quaternion rotation = new Quaternion();
-            //rotation.eulerAngles = new Vector3(0.0f, 180.0f, 0.0f);
-            //transform.rotation = rotation;
-
-            //RotateImmediately(180.0f);
 
             stickZ = -1;
         }
@@ -122,24 +109,12 @@ public class PlayerController2 : MonoBehaviour
                 velocity.x += acceleration;// * Time.deltaTime;
                 if (velocity.x > speed) velocity.x = speed;
 
-                //Quaternion rotation = new Quaternion();
-                //rotation.eulerAngles = new Vector3(0.0f, 90.0f, 0.0f);
-                //transform.rotation = rotation;
-
-                //RotateImmediately(90.0f);
-
                 stickX = 1;
             }
 
             if (LeftInput()) {
                 velocity.x -= acceleration;// * Time.deltaTime;
                 if (velocity.x < -speed) velocity.x = -speed;
-
-                //Quaternion rotation = new Quaternion();
-                //rotation.eulerAngles = new Vector3(0.0f, -90.0f, 0.0f);
-                //transform.rotation = rotation;
-
-                //RotateImmediately(-90.0f);
 
                 stickX = -1;
             }
@@ -151,12 +126,7 @@ public class PlayerController2 : MonoBehaviour
             StartCoroutine(DieRagdoll());
         }
 
-        Rigidbody rb = GetComponent<Rigidbody>();
-        //Vector3 tempVel = rb.velocity;
-        //tempVel.x = velocity.x * 100;
-        //tempVel.z = velocity.z * 100;
-        //tempVel.y -= 0.1f; // gravity adjustment (THIS IS GREAT!!)
-        //rb.velocity = tempVel;
+       
 
         if (Input.GetKeyDown(KeyCode.Space)) {
             KnockDown();
@@ -168,7 +138,7 @@ public class PlayerController2 : MonoBehaviour
 
         }
 
-        if (Input.GetKeyDown(KeyCode.P)) {
+        if (Input.GetKeyDown(KeyCode.I)) {
             Die();
         }
 
@@ -177,9 +147,7 @@ public class PlayerController2 : MonoBehaviour
             print("Get Hit animation");
         }
 
-        //if (Mathf.Abs(stickX) < 0.1f) stickX = 0.0f;
-        //if (Mathf.Abs(stickZ) < 0.1f) stickZ = 0.0f;
-
+        Rigidbody rb = GetComponent<Rigidbody>();
         float yy = rb.velocity.y;
         rb.velocity = new Vector3(stickX * speed2, yy, stickZ * speed2);
         rb.AddForce(Vector3.down * 20.0f); // gravity adjustment (THIS IS GREAT!!)

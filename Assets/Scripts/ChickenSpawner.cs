@@ -19,7 +19,7 @@ public class ChickenSpawner : MonoBehaviour
     const float HALF_PI = 1.5707963267948966192313216916398f;
     List<GameObject> chickenList;
     int killCount = 0;
-    int wave = -1;
+    int wave = 0;
     int waveKillCount = 0;
     const int DEFAULT_NUM_CHICKENS = 5; //20;
     const float METEOR_CHICKEN_SPAWN_DELAY = 0.5f;

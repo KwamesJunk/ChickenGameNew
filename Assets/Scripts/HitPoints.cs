@@ -8,11 +8,13 @@ public class HitPoints : MonoBehaviour
     int hp = 1;
     public event Action onChange;
     public event Action onZeroOrLess;
+    bool isInitialized = false;
 
     public void Awake()
     {
         onChange += Dummy;
         onZeroOrLess += Dummy;
+        isInitialized = true;
     }
 
     public int Get()
@@ -22,8 +24,14 @@ public class HitPoints : MonoBehaviour
 
     public void Set(int p_hp)
     {
-        hp = p_hp;
-        onChange();
+        if (isInitialized) {
+            hp = p_hp;
+
+            //if (onChange == null)
+            //    print("Action Delegate is null (onChange)");
+            //else
+                onChange();
+        }
     }
 
     public void Increment()
