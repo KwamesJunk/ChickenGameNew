@@ -72,7 +72,7 @@ public class PlayerController2 : MonoBehaviour
             transform.position = new Vector3(0, 10, 0);
         }
 
-        if (Input.GetMouseButtonDown(0) && !animator.GetBool("SwingSword")) {
+        if ((Input.GetMouseButtonDown(0) || Input.GetButton("Fire3")) && !animator.GetBool("SwingSword")) {
             animator.SetTrigger("SwingSword");
         }
 
@@ -163,7 +163,7 @@ public class PlayerController2 : MonoBehaviour
         //RotateTowardTarget(targetDirection, turnSpeed);
         RotateTowardTarget();
 
-        //transform.Rotate(new Vector3(0.0f, 30.0f * Time.deltaTime, 0.0f));
+        //transform.Rotate(new Vector3(0.0f, 1080.0f * Time.deltaTime, 0.0f));
         //if (Time.time - tk > 0.5f) {
         //    tk = Time.time;
 
