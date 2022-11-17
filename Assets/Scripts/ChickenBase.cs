@@ -7,6 +7,7 @@ public abstract class ChickenBase : MonoBehaviour
     [SerializeField] protected LifeChicken lifeChickenPrefab;
     protected GameObject player;
     protected ChickenSpawner chickenSpawner;
+    protected LifeBar lifeBar;
 
     //[SerializeField] public int number;
     //static int currentNumber = 0;
@@ -40,4 +41,8 @@ public abstract class ChickenBase : MonoBehaviour
         GetComponent<HitPoints>().Set(newLife);
     }
 
+    public void SetLifeBar(LifeBar bar)
+    {
+        lifeBar = bar;
+    }
 }

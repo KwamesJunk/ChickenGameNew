@@ -13,8 +13,8 @@ public class LifeBar : MonoBehaviour
     void Start()
     {
         bar = GetComponent<Image>();
-        fullLength = bar.rectTransform.sizeDelta.x;
-        thickness = bar.rectTransform.sizeDelta.y;
+        fullLength = bar.rectTransform.rect.width;
+        thickness = bar.rectTransform.rect.height;
     }
 
     // Update is called once per frame
@@ -30,6 +30,8 @@ public class LifeBar : MonoBehaviour
 
     public void Set(HitPoints hp)
     {
-        bar.rectTransform.sizeDelta = new Vector2(100.0f * hp.Get() / hp.GetMax(), 25);
+        if (bar) { 
+            bar.rectTransform.sizeDelta = new Vector2(fullLength * hp.Get() / hp.GetMax(), 25);
+        }
     }
 }

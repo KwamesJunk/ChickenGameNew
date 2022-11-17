@@ -75,7 +75,8 @@ public class MeteorChicken : MonoBehaviour
                 print("Meteor Chicken hit!");
                 hp.Decrement(damage);
                 
-                if (other.tag == "Chicken") {
+                //if (other.tag == "Chicken") {
+                if (other.GetComponent<ChickenBase>()) { 
                     other.GetComponent<ChickenBase>().TakeDamage(gameObject);
                 }
 

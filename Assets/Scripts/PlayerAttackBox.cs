@@ -25,7 +25,7 @@ public class PlayerAttackBox : MonoBehaviour
         Transform parentTransform = other.transform.root;
 
         if (parentTransform.tag == "Chicken") {
-            print("Hit a chicken.");
+            //print("Hit a chicken.");
             ChickenBase chickenController = parentTransform.GetComponent<ChickenBase>();
 
             if (!chickenController) return;// print("chickenController is null");

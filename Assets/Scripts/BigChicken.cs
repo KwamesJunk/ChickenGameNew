@@ -139,6 +139,7 @@ public class BigChicken : ChickenBase
 
             HitPoints hp = GetComponent<HitPoints>(); // a kludge until I think of something better
             hp.Decrement();
+            lifeBar.Set(hp);
 
             //if (life <= 0) {
             if (hp.Get() <= 0) {

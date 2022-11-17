@@ -13,7 +13,7 @@ public class PlayerController2 : MonoBehaviour
     [SerializeField] Text scoreboard;
     [SerializeField] GameObject[] bodyParts;
     [SerializeField] GameObject shovel;
-    [SerializeField] Image lifeBar;
+    [SerializeField] LifeBar lifeBar;
     [SerializeField] [Range(1, 20)] float stickSpeed = 10;
     [SerializeField] float turnSpeed;
     [SerializeField] Announcer announcer;
@@ -64,6 +64,8 @@ public class PlayerController2 : MonoBehaviour
         stickX = stickZ = 0.0f;
 
         startTime = Time.time;
+
+        print("ABC");
     }
 
     // Update is called once per frame
@@ -340,7 +342,8 @@ public class PlayerController2 : MonoBehaviour
     void UpdateLifeBar()
     {
         //lifeBar.rectTransform.sizeDelta = new Vector2(4*life, 25);
-        lifeBar.rectTransform.sizeDelta = new Vector2(4*hp.Get(), 25);
+        //lifeBar.rectTransform.sizeDelta = new Vector2(4*hp.Get(), 25);
+        lifeBar.Set(hp);
     }
 
     void Die()

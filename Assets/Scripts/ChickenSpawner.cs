@@ -14,6 +14,8 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] UnityEngine.UI.Text waveDisplay;
     [SerializeField] PlayerCamera playerCamera;
     [SerializeField] Announcer announcer;
+    [SerializeField] LifeBar chickenLifeBar;
+
     GameObject player;
     float spawnDelay = 1.0f;
     float timeKeeper = 0.0f;
@@ -21,7 +23,7 @@ public class ChickenSpawner : MonoBehaviour
     const float HALF_PI = 1.5707963267948966192313216916398f;
     List<GameObject> chickenList;
     int killCount = 0;
-    int wave = 7;
+    int wave = 0;
     int waveKillCount = 0;
     const int DEFAULT_NUM_CHICKENS = 5; //20;
     float meteorChickenSpawnDelay = 0.5f;
@@ -58,7 +60,8 @@ public class ChickenSpawner : MonoBehaviour
                     }
                     break;
                 case 1: // Spawn Big Chicken
-                    SpawnBigChicken();                   
+                    SpawnBigChicken();
+                    chickenLifeBar.GetComponent<UnityEngine.UI.Image>().enabled = true;
                     NextWave();
                     break;
                 case 2:
@@ -227,6 +230,9 @@ public class ChickenSpawner : MonoBehaviour
     {
         RandomPointOnCircle(radius, out float x, out float z); // initializing inline
         GameObject bigChicken = Instantiate(bigChickenPrefab, player.transform.position + new Vector3(z, 10.0f, x), Quaternion.identity);
+        bigChicken.GetComponent<ChickenBase>().SetLifeBar(chickenLifeBar);
+
+
         SetChickenSpawnerToThis(bigChicken);
         chickenList.Add(bigChicken);
     }
@@ -270,6 +276,8 @@ public class ChickenSpawner : MonoBehaviour
     ChickenBase SpawnGiantChicken(float xOffset, float yOffset, float zOffset)
     {
         GameObject giantChicken = Instantiate(giantChickenPrefab, player.transform.position + new Vector3(xOffset, yOffset, zOffset), Quaternion.identity);
+        giantChicken.GetComponent<ChickenBase>().SetLifeBar(chickenLifeBar);
+
         SetChickenSpawnerToThis(giantChicken);
         chickenList.Add(giantChicken);
 

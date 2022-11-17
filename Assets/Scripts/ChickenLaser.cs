@@ -19,7 +19,7 @@ public class ChickenLaser : MonoBehaviour
     private void OnTriggerStay(Collider other)
     {
         if (other.tag == Global.PLAYER_TAG) {
-            print("Giant Chicken Laser hit Player!");
+            //print("Giant Chicken Laser hit Player!");
             other.GetComponent<HitPoints>().Decrement();
         }
     }

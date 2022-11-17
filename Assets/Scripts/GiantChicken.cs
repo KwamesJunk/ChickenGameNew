@@ -248,49 +248,32 @@ public class GiantChicken : ChickenBase
         print("A " + attacker.tag + " is attacking the Giant Chicken!");
         if (attacker.tag == "Chicken") return;
 
-        //print("takedamage");
-        //if (state != State.DEAD && Time.time - lastTimeHit > INVINCIBILITY_TIME) {
-            //lastTimeHit = Time.time;
-            //--life;
+        HitPoints hp = GetComponent<HitPoints>(); // a kludge until I think of something better
+        hp.Decrement(); // temporarily 100
+        lifeBar.Set(hp);
 
-            HitPoints hp = GetComponent<HitPoints>(); // a kludge until I think of something better
-            hp.Decrement(); // temporarily 100
+        if (hp.Get() <= 0) {
+            isAlive = false;
+            GetComponent<ComeApart>().Execute();
+            GetComponent<FadeParts>().StartFading();
+            Destroy(gameObject, 5.1f);
 
-            //if (life <= 0) {
-            if (hp.Get() <= 0) {
-                isAlive = false;
-                GetComponent<ComeApart>().Execute();
-                GetComponent<FadeParts>().StartFading();
-                Destroy(gameObject, 5.1f);
-                //Destroy(smoke[0]);
-                //Destroy(smoke[1]);
-
-                if (chickenSpawner) {
-                    chickenSpawner.IncrementKillCount();
-                }
-                //else {
-                //    print("ChickenSpawner unassigned!");
-                //}
-
-                return;
+            if (chickenSpawner) {
+                chickenSpawner.IncrementKillCount();
             }
 
-            // From here on, the chicken is not dead.
+            return;
+        }
 
-            //print("Tag: "+killer.tag);
-            // Let the Chicken Spawner know if the player is the one who is the killer
-            if (attacker.tag == "Player") {
-                //print("Player hit " + name);
+        // From here on, the chicken is not dead.
 
-
-                Vector3 hitForce = (transform.position - attacker.transform.position);
-                hitForce.Normalize();
-                hitForce.y = 1.0f;
-                hitForce *= 500;
-                GetComponent<Rigidbody>().AddForce(hitForce, ForceMode.Impulse);
-                //print(hitForce);
-
-            }
-        //}
+        // Let the Chicken Spawner know if the player is the one who is the killer
+        if (attacker.tag == "Player") {
+            Vector3 hitForce = (transform.position - attacker.transform.position);
+            hitForce.Normalize();
+            hitForce.y = 1.0f;
+            hitForce *= 50;
+            GetComponent<Rigidbody>().AddForce(hitForce, ForceMode.Impulse);
+        }
     }
 }

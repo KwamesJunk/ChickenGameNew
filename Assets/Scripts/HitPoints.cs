@@ -53,7 +53,7 @@ public class HitPoints : MonoBehaviour
     public void SetToMax()
     {
         if (isInitialized) {
-            hp = maxHp;
+            Set(maxHp);
             onChange();
         }
     }
