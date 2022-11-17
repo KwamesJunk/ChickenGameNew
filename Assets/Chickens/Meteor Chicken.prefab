@@ -6962,7 +6962,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   explosion: {fileID: 8526614574813473924, guid: d20e9718ee47b174fbf06ba453843ddc, type: 3}
   targetEffect: {fileID: 1925941964445170197, guid: 2472d7ec00be40046b345b593e786bcd, type: 3}
-  damage: 2
+  damage: 5
 --- !u!114 &3603821886658860952
 MonoBehaviour:
   m_ObjectHideFlags: 0

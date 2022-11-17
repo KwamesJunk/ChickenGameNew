@@ -11,6 +11,7 @@ public class ChickenOfDeath : ChickenBase
     [SerializeField] Material attackMaterial;
     [SerializeField] Material regularMaterial;
     HitPoints hp;
+    bool killedByPlayer = false;
 
     enum State
     {
@@ -26,14 +27,14 @@ public class ChickenOfDeath : ChickenBase
     const float INVINCIBILITY_TIME = 0.5f;
     float lastTimeHit = 0.0f;
 
-    private void Awake()
-    {
-        player = GameObject.Find("Player");
+    //private void Awake()
+    //{
+    //    player = GameObject.Find("Player");
 
-        if (!player) print("Player not found");
+    //    if (!player) print("Player not found");
 
-        //life = 1;
-    }
+    //    //life = 1;
+    //}
 
     // Start is called before the first frame update
     private void Start()
@@ -42,7 +43,7 @@ public class ChickenOfDeath : ChickenBase
         baseColour = torso.GetComponent<MeshRenderer>().material.color;
 
         hp = GetComponent<HitPoints>();
-        hp.onZeroOrLess += Die;
+        //hp.onZeroOrLess += Die;
         hp.Set(1);
     }
 
@@ -53,9 +54,14 @@ public class ChickenOfDeath : ChickenBase
     //}
 
     // Update is called once per frame
-    public override void Update()
+    public void Update()
     {
         if (transform.position.y < -15.0f) Destroy(gameObject);
+
+        if (hp.Get() <= 0) {
+            Die();
+            return;
+        }
 
         switch (state) {
             case State.IDLE:
@@ -184,33 +190,29 @@ public class ChickenOfDeath : ChickenBase
     //float lastTimeHit = 0.0f;
     public override void TakeDamage(GameObject killer)
     {
-        //print("takedamage");
+        if (player.GetComponent<PlayerController2>().IsGameOver()) return;
+
         if (state != State.DEAD && Time.time - lastTimeHit > INVINCIBILITY_TIME) {
             if (hp.Get() <= 0) return;
 
-                lastTimeHit = Time.time;
-            //--life;
+            lastTimeHit = Time.time;
             hp.Decrement();
 
-            //if (life <= 0) {
-            if (hp.Get() <= 0) { // change this to onZeroOrLess event
-                state = State.DEAD;
-                //ComeApart();
+            if (killer.tag == "Player") {
+                killedByPlayer = true;
+                print(name + " was killed by Player");
+            }
 
-                //if (chickenSpawner) {
-                //    chickenSpawner.IncrementKillCount();
-                //}
-                //else {
-                //    print("ChickenSpawner unassigned!");
-                //}
+            print("TakeDamage: " + name);
 
+            if (hp.Get() <= 0) {
                 //Die();
                 return;
             }
 
             // From here on, the chicken is not dead.
-            
-            //print("Tag: "+killer.tag);
+
+            print("Tag: "+killer.tag);
             // Let the Chicken Spawner know if the player is the one who is the killer
             if (killer.tag == "Player") {
                 //print("Player hit " + name);
@@ -234,16 +236,28 @@ public class ChickenOfDeath : ChickenBase
 
     void Die()
     {
+        if (state == State.DEAD) return;
+
+        print("Die ("+name+")");
+        state = State.DEAD;
         GetComponent<ComeApart>().Execute();
         GetComponent<FadeParts>().StartFading();
+        Destroy(gameObject, 5.1f);
+
 
         ChickenSpawner spawner = GetComponent<ChickenBase>().GetChickenSpawner();
 
-        if (spawner) {
-            spawner.IncrementKillCount();
+        if (spawner != null) {
+            if (killedByPlayer) {
+                spawner.IncrementKillCount();
+            }
         }
         else {
             print("ChickenSpawner unassigned!");
+        }
+
+        if (Random.Range(0, 10) == 0) {
+            SpawnLifeChicken();
         }
     }
 
@@ -301,34 +315,8 @@ public class ChickenOfDeath : ChickenBase
         }
     }
 
-    //public void SetChickenSpawner(ChickenSpawner spawner) // in superclass
-    //{
-    //    chickenSpawner = spawner;
-    //}
-
-    //public void SetLife(int newLife) // in superclass
-    //{
-    //    //life = newLife;
-    //    hp.Set(newLife);
-    //}
-
-    //public void ComeApartNoDestroy(float minForce, float maxForce, float lifeTime) // no references to this
-    //{
-    //    //GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
-
-    //    foreach (GameObject bodyPart in breakParts) {
-    //        Rigidbody rb = bodyPart.GetComponent<Rigidbody>();
-    //        rb.isKinematic = false;
-    //        bodyPart.transform.parent = null;
-
-    //        // get collider, whatever it may be, and enable it
-    //        Collider collider = bodyPart.GetComponent<Collider>();
-    //        collider.enabled = true;
-
-    //        // randomize explosion a bit
-    //        float mag = Random.Range(minForce, maxForce); // 3.0, 5.0
-    //        bodyPart.GetComponent<Rigidbody>().AddForce(mag * randomUpVector(), ForceMode.Impulse);
-    //        Destroy(bodyPart, lifeTime);
-    //    }
-    //}
+    void SpawnLifeChicken()
+    {
+        Instantiate(lifeChickenPrefab, transform.position, transform.rotation);
+    }
 }

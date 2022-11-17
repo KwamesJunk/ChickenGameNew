@@ -48,9 +48,9 @@ public class FadeParts : MonoBehaviour
 
         SetAlpha(currentAlpha);
 
-        foreach (GameObject part in disappearOnFade) {
-            SetPartAlpha(part, 0.0f);
-        }
+        //foreach (GameObject part in disappearOnFade) {
+        //    SetPartAlpha(part, 0.0f);
+        //}
                 // cheat and make pupils disappear
                 //if (r.name == "PupilL" || r.name == "PupilR") {
                 //    c.a = 0.0f;
@@ -81,6 +81,10 @@ public class FadeParts : MonoBehaviour
     {
         fading = true;
         //print("Start Fading");
+        
+        foreach (GameObject part in disappearOnFade) {
+            Destroy(part);
+        }
     }
 
     void SetAlpha(float alpha)

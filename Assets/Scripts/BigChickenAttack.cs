@@ -23,6 +23,9 @@ public class BigChickenAttack : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         Transform parentTransform = other.transform.root;
+        ChickenBase chickenController = parentTransform.GetComponent<ChickenBase>();
+
+        if (!chickenController) return; // in case BigChicken is already destroyed
 
         if (parentTransform.gameObject == transform.root.gameObject) {
             //print("Hit Self");
@@ -32,7 +35,7 @@ public class BigChickenAttack : MonoBehaviour
             if (other.gameObject != gameObject) {
                 if (parentTransform.tag == "Chicken") {
                     //print("Hit a chicken.");
-                    ChickenBase chickenController = parentTransform.GetComponent<ChickenBase>();
+                    chickenController = parentTransform.GetComponent<ChickenBase>();
                     chickenController.TakeDamage(gameObject);
                 }
             }

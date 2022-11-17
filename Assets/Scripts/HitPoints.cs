@@ -5,7 +5,8 @@ using System;
 
 public class HitPoints : MonoBehaviour
 {
-    int hp = 1;
+    [SerializeField]int hp = 1;
+    [SerializeField]int maxHp = 1;
     public event Action onChange;
     public event Action onZeroOrLess;
     bool isInitialized = false;
@@ -17,9 +18,19 @@ public class HitPoints : MonoBehaviour
         isInitialized = true;
     }
 
+    public void Start()
+    {
+        hp = maxHp;
+    }
+
     public int Get()
     {
         return hp;
+    }
+
+    public int GetMax()
+    {
+        return maxHp;
     }
 
     public void Set(int p_hp)
@@ -31,6 +42,19 @@ public class HitPoints : MonoBehaviour
             //    print("Action Delegate is null (onChange)");
             //else
                 onChange();
+        }
+    }
+
+    public void SetMax(int p_maxHp)
+    {
+        maxHp = p_maxHp;
+    }
+
+    public void SetToMax()
+    {
+        if (isInitialized) {
+            hp = maxHp;
+            onChange();
         }
     }
 

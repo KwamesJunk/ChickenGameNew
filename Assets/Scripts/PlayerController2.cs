@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class PlayerController2 : MonoBehaviour
 {
@@ -13,8 +14,12 @@ public class PlayerController2 : MonoBehaviour
     [SerializeField] GameObject[] bodyParts;
     [SerializeField] GameObject shovel;
     [SerializeField] Image lifeBar;
-    [SerializeField] [Range(1, 20)] float speed2;
+    [SerializeField] [Range(1, 20)] float stickSpeed = 10;
     [SerializeField] float turnSpeed;
+    [SerializeField] Announcer announcer;
+    [SerializeField] Light skyLight;
+    [SerializeField] GameObject winScreen;
+    [SerializeField] GameObject loseScreen;
     
 
     Animator animator;
@@ -26,41 +31,39 @@ public class PlayerController2 : MonoBehaviour
     HitPoints hp;
     float stickX, stickZ;
     float targetDirection = 0.0f;
+    bool sunrise = true;
+    float sunAngle = 0.0f;
+    bool wonGame = false;
+    float startTime;
+    float endTime;
 
 
 
     private void Awake()
     {
-        //attackBox = GetComponent<BoxCollider>();
-        Physics.IgnoreLayerCollision(3, 3);
-        Physics.IgnoreLayerCollision(3, 6);
-        Physics.IgnoreLayerCollision(7, 7);
-        Physics.IgnoreLayerCollision(7, 8);
+        SetPhysicsLayerCollisions();
 
         velocity = Vector3.zero;
     }
+
     // Start is called before the first frame update
     void Start()
     {
         animator = GetComponent<Animator>();
         pauseController = GetComponent<PauseController>();
 
-        StartCoroutine(TestController());
+        StartCoroutine(TestController()); // Don't delete this line. It'll be useful later.
 
         // Set up HitPoint component
         hp = GetComponent<HitPoints>();
-        hp.onZeroOrLess += Die;// KnockdownAnimation;
-        hp.onChange += UpdateLifeBar;
-        hp.Set(100);
+        hp.onZeroOrLess += Die; // event Action
+        hp.onChange += UpdateLifeBar; // event Action
+        hp.SetMax(100);
+        hp.SetToMax();
 
         stickX = stickZ = 0.0f;
 
-        //print("atan checks");
-        //print("1) " + Mathf.Atan2(1.0f, ROOT_3) * Mathf.Rad2Deg);
-        //print("2) " + Mathf.Atan2(1.0f, -ROOT_3) * Mathf.Rad2Deg);
-        //print("3) " + Mathf.Atan2(-1.0f, -ROOT_3) * Mathf.Rad2Deg);
-        //print("4) " + Mathf.Atan2(-1.0f, ROOT_3) * Mathf.Rad2Deg);
-        
+        startTime = Time.time;
     }
 
     // Update is called once per frame
@@ -68,18 +71,21 @@ public class PlayerController2 : MonoBehaviour
     {
         if (pauseController.IsPaused()) return;
 
-        if (transform.position.y < -15) {
-            transform.position = new Vector3(0, 10, 0);
+        if (CheckForGameOver()) return;
+
+        Sunrise();
+
+        TeleportBackIfFallOff();
+
+        if (IsAttackButtonPressed()) {
+            animator.SetTrigger("SwingSword"); // Start swinging sword
         }
 
-        if ((Input.GetMouseButtonDown(0) || Input.GetButton("Fire3")) && !animator.GetBool("SwingSword")) {
-            animator.SetTrigger("SwingSword");
-        }
+        // Gamepad
+        UpdateAnalogStickVariables();
 
-        //// Gamepad
-        UpdateController();
-
-
+        // TODO: Analyze this, fix it if necessary and simplify it
+        // -------------------------------------------------------------------------------------------------------------
         // WASD Controls
         if (Input.GetKeyUp(Global.UP_KEY) || Input.GetKeyUp(Global.DOWN_KEY) || (ForwardInput() && BackwardInput())) {
             velocity.z = 0.0f;
@@ -119,40 +125,17 @@ public class PlayerController2 : MonoBehaviour
                 stickX = -1;
             }
         }
+        // -------------------------------------------------------------------------------------------------------------
 
-        if (Input.GetKeyDown(KeyCode.LeftAlt)) {
-
-            animator.SetBool("KnockedDown2", true);
-            StartCoroutine(DieRagdoll());
-        }
-
-       
-
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            KnockDown();
-        }
-
-        if (Input.GetKeyDown(KeyCode.Z)) {
-
-            hp.Decrement(5);
-
-        }
-
-        if (Input.GetKeyDown(KeyCode.I)) {
-            Die();
-        }
-
-        if (Input.GetKeyDown(KeyCode.O)) {
-            animator.SetTrigger("Get Hit");
-            print("Get Hit animation");
-        }
+        TestVariousThingsOut();
 
         Rigidbody rb = GetComponent<Rigidbody>();
-        float yy = rb.velocity.y;
-        rb.velocity = new Vector3(stickX * speed2, yy, stickZ * speed2);
-        rb.AddForce(Vector3.down * 20.0f); // gravity adjustment (THIS IS GREAT!!)
-        animator.SetFloat("Speed", Mathf.Abs(rb.velocity.magnitude / speed2));
+        rb.velocity = new Vector3(stickX * stickSpeed, rb.velocity.y, stickZ * stickSpeed);
 
+        rb.AddForce(Vector3.down * 20.0f); // gravity adjustment (THIS IS GREAT!!)
+        animator.SetFloat("Speed", Mathf.Abs(rb.velocity.magnitude / stickSpeed)); // animator will choose walking or running based on this
+
+        // Set GameObject direction target. Review this.
         if (stickX + stickZ != 0) {
             float yAngle = Mathf.Atan2(stickX, stickZ) * 180.0f / Mathf.PI; // this will change to targetAngle
 
@@ -163,18 +146,6 @@ public class PlayerController2 : MonoBehaviour
         //RotateTowardTarget(targetDirection, turnSpeed);
         RotateTowardTarget();
 
-        //transform.Rotate(new Vector3(0.0f, 1080.0f * Time.deltaTime, 0.0f));
-        //if (Time.time - tk > 0.5f) {
-        //    tk = Time.time;
-
-        //    float eulerY = transform.rotation.eulerAngles.y;
-        //    //if (eulerY > 180.0f) {
-        //    //    eulerY = eulerY;
-        //    //}
-        //    //print("Current Y Angle: "+eulerY);
-        //    print("Current Target Dir: "+targetDirection);
-        //}
-
     } // end Update
 
     void KnockdownAnimation()
@@ -183,7 +154,7 @@ public class PlayerController2 : MonoBehaviour
         //print("Knocked Down");
     }
 
-    public void Hit()
+    public void Hit() // Anination event
     {
         //print("Hit()");
         //attackBox.enabled = true;
@@ -191,7 +162,7 @@ public class PlayerController2 : MonoBehaviour
         animator.ResetTrigger("SwingSword");
     }
 
-    public void EndSwing()
+    public void EndSwing()  // Anination event
     {
         //print("EndSwing()");
         isAttacking = false;
@@ -227,15 +198,9 @@ public class PlayerController2 : MonoBehaviour
 
     IEnumerator GetUp()
     {
-        //transform.position = transform.position + new Vector3(0, 1f, 0);
         yield return new WaitForSeconds(knockedDownTime);
 
         animator.SetBool("KnockedDown2", false);
-
-        //foreach (GameObject bodyPart in bodyParts) {
-        //    bodyPart.GetComponent<Rigidbody>().isKinematic = false;
-        //    bodyPart.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
-        //}
     }
 
     public int GetScore()
@@ -258,27 +223,27 @@ public class PlayerController2 : MonoBehaviour
         return isAttacking;
     }
 
-    float CastRayFromFeet()
-    {
-        RaycastHit[] hitInfoList = Physics.RaycastAll(transform.position+new Vector3(0,1.83f,0), Vector3.forward, 1.0f);
+    //float CastRayFromFeet()
+    //{
+    //    RaycastHit[] hitInfoList = Physics.RaycastAll(transform.position + new Vector3(0, 1.83f, 0), Vector3.forward, 1.0f);
 
-        foreach(RaycastHit hitInfo in hitInfoList) {
-            if (hitInfo.transform.tag == "Ground") {
-                print(Vector3.Dot(hitInfo.normal, Vector3.forward));
-                return Vector3.Dot(hitInfo.normal, Vector3.forward);
-            }
-        }
+    //    foreach (RaycastHit hitInfo in hitInfoList) {
+    //        if (hitInfo.transform.tag == "Ground") {
+    //            print(Vector3.Dot(hitInfo.normal, Vector3.forward));
+    //            return Vector3.Dot(hitInfo.normal, Vector3.forward);
+    //        }
+    //    }
 
-        return 0.0f;
-    }
+    //    return 0.0f;
+    //}
 
-    IEnumerator RaycastCoroutine()
-    {
-        while (true) {
-            CastRayFromFeet();
-            yield return new WaitForSeconds(0.5f);
-        }
-    }
+    //IEnumerator RaycastCoroutine()
+    //{
+    //    while (true) {
+    //        CastRayFromFeet();
+    //        yield return new WaitForSeconds(0.5f);
+    //    }
+    //}
 
     IEnumerator TestController()
     {
@@ -294,12 +259,12 @@ public class PlayerController2 : MonoBehaviour
             //if (Mathf.Abs(horiz) < 0.4f) horiz = 0.0f;
             //if (Mathf.Abs(vert) < 0.4f) vert = 0.0f;
 
-            horizontalText.text = "Horizontal: "+horiz;
-            verticalText.text = "Vertical: "+vert;
+            horizontalText.text = "Horizontal: " + horiz;
+            verticalText.text = "Vertical: " + vert;
         }
     }
 
-    void UpdateController()
+    void UpdateAnalogStickVariables()
     {
         stickX = Input.GetAxis("Horizontal");
         stickZ = Input.GetAxis("Vertical");
@@ -453,5 +418,127 @@ public class PlayerController2 : MonoBehaviour
         Quaternion rotation = new Quaternion();
         rotation.eulerAngles = new Vector3(0.0f, yRot, 0.0f);
         transform.rotation = rotation;
+    }
+
+    void SetPhysicsLayerCollisions()
+    {
+        Physics.IgnoreLayerCollision(3, 3);
+        Physics.IgnoreLayerCollision(3, 6);
+        Physics.IgnoreLayerCollision(7, 7);
+        Physics.IgnoreLayerCollision(7, 8);
+    }
+
+    void TeleportBackIfFallOff()
+    {
+        if (transform.position.y < -15) {
+            transform.position = new Vector3(0, 10, 0);
+        }
+    }
+
+    bool IsAttackButtonPressed()
+    {
+        return (Input.GetMouseButtonDown(0) || Input.GetButton("Fire3")) && !animator.GetBool("SwingSword");
+    }
+
+    void TestVariousThingsOut()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftAlt)) {
+
+            animator.SetBool("KnockedDown2", true);
+            StartCoroutine(DieRagdoll());
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            KnockDown();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Z)) {
+
+            hp.Decrement(15);
+        }
+
+        if (Input.GetKeyDown(KeyCode.I)) {
+            Die();
+        }
+
+        if (Input.GetKeyDown(KeyCode.O)) {
+            animator.SetTrigger("Get Hit");
+            print("Get Hit animation");
+        }
+
+        if (Input.GetKeyDown(KeyCode.KeypadEnter)) {
+            announcer.Announce();
+        }
+    }
+
+    void Sunrise()
+    {
+        if (sunrise) {
+            if (sunAngle < 80.0f) {
+                sunAngle += (10.0f * Time.deltaTime);
+                //print("Sunrise: " + sunAngle);
+            }
+            else {
+                sunrise = false;
+            }
+
+            skyLight.transform.rotation = Quaternion.Euler(new Vector3(sunAngle, 45.0f, 0.0f));
+        }
+    }
+
+    bool Sunset()
+    {        
+        if (sunAngle < 180.0f) {
+            sunAngle += (30.0f * Time.deltaTime);
+            //print("Sunrise: " + sunAngle);
+            skyLight.transform.rotation = Quaternion.Euler(new Vector3(sunAngle, 45.0f, 0.0f));
+            return true;
+        }
+
+        return false; // finished
+    }
+
+    bool CheckForGameOver()
+    {
+        if (hp.Get() > 0 && !wonGame) return false;
+
+        if (!Sunset()) { // if Sunset is finished
+            if (wonGame) {
+                // activate win screen
+                winScreen.SetActive(true);
+                winScreen.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = FormatTime(endTime - startTime);
+            }
+            else {
+                // activate lose screen
+                loseScreen.SetActive(true);
+            }
+        }
+
+        return true;
+    }
+
+    public void SetWonGame(bool isOver)
+    {
+        wonGame = isOver;
+        endTime = Time.time;
+    }
+
+    public bool IsGameOver()
+    {
+        return wonGame || hp.Get() <= 0;
+    }
+
+    string FormatTime(float input)
+    {
+        int minutes = (int)(input / 60.0f);
+        int seconds = (int)(input - (minutes * 60));
+
+        string formattedTime = minutes + ":";
+        if (seconds < 10) {
+            formattedTime += "0";
+        }
+        formattedTime += seconds;
+
+        return formattedTime;
     }
 }

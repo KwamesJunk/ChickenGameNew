@@ -14,5 +14,5 @@ public class Global
     public const KeyCode RIGHT_KEY2 = KeyCode.RightArrow;
     public const KeyCode UP_KEY2 = KeyCode.UpArrow;
     public const KeyCode DOWN_KEY2 = KeyCode.DownArrow;
-
+    public float musicVolume = 1.0f;
 }

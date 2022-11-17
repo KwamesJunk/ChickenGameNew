@@ -9,7 +9,7 @@ public class PlayerCamera : MonoBehaviour
     Vector3 distance;
     const float ROOT_3 = 1.7320508075688772935274463415059f;
     float yTarget = 3.0f, zTarget = -3.0f;
-    float zoomOutAmount = 0.01f;//0.3f;//0.05f;
+    float zoomOutAmount = 0.05f;//0.01f;//0.3f;//0.05f;
     float yTargetOld, zTargetOld;
     bool resetting;
 
@@ -67,6 +67,24 @@ public class PlayerCamera : MonoBehaviour
     {
         yTarget += zoomOutAmount;
         zTarget -= zoomOutAmount * ROOT_3;
+    }
+
+    public void IncreaseDistance(float customZoom)
+    {
+        yTarget += customZoom;
+        zTarget -= customZoom * ROOT_3;
+    }
+
+    public void SetDistance(float distance)
+    {
+        yTarget = distance;
+        zTarget = -distance * ROOT_3; 
+    }
+
+    public void SetDistance(float yDistance, float zDistance)
+    {
+        yTarget = yDistance;
+        zTarget = -zDistance;
     }
 
     public void Reset()

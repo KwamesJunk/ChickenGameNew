@@ -5,34 +5,7 @@ using UnityEngine;
 public class ComeApart : MonoBehaviour
 {
     [SerializeField]GameObject[] breakParts;
-    //bool broken = false;
-
-    //private void Update()
-    //{
-    //    int i = 0;
-    //    if (broken) {
-    //        foreach (GameObject bodyPart in breakParts) {
-    //            if (bodyPart) {
-    //                Material m = bodyPart.GetComponent<MeshRenderer>().material;
-
-    //                if (m) {
-
-    //                    Color c = m.color;
-    //                    //c.a -= (0.1f * Time.deltaTime / 3.0f);
-    //                    //c.a = c.a * 0.99f;
-    //                    c.a -= 1.0f * Time.deltaTime / 3.0f;
-    //                    if (c.a < 0) c.a = 0;
-    //                    bodyPart.GetComponent<MeshRenderer>().material.color = c;
-    //                    //print("Body Part #" + i);
-    //                }
-                    
-    //            }
-    //            ++i;
-    //        }
-    //        i = 0;
-    //    }      
-    //}
-
+   
     public void Execute()
     {
         //if (broken) return;
@@ -42,6 +15,8 @@ public class ComeApart : MonoBehaviour
         GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
 
         foreach (GameObject bodyPart in breakParts) {
+            if (!bodyPart) continue; // in case bodyPart has been destroyed after fast fade
+
             Rigidbody rb = bodyPart.GetComponent<Rigidbody>();
             rb.isKinematic = false;
             bodyPart.transform.parent = null;
@@ -57,7 +32,7 @@ public class ComeApart : MonoBehaviour
             Destroy(bodyPart, 5.0f);
         }
 
-        Destroy(gameObject, 5.0f);
+        //Destroy(gameObject, 5.0f);
         
     }
 

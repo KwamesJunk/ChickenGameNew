@@ -2929,7 +2929,6 @@ MonoBehaviour:
   lifeBar: {fileID: 0}
   speed2: 1
   turnSpeed: 1080
-  pauseController: {fileID: 0}
 --- !u!114 &8209533278208992551
 MonoBehaviour:
   m_ObjectHideFlags: 0

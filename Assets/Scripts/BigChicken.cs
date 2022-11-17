@@ -50,7 +50,7 @@ public class BigChicken : ChickenBase
     float flapCounter = 0.0f;
 
     // Update is called once per frame
-    public override void Update()
+    public void Update()
     {
         switch (state) {
             case State.PECK:
@@ -125,8 +125,13 @@ public class BigChicken : ChickenBase
         
     }
 
-    public override void TakeDamage(GameObject attacker) // ass Vector3 force as a parameter
+    public override void TakeDamage(GameObject attacker)
     {
+        if (player.GetComponent<PlayerController2>().IsGameOver()) return;
+
+        print("A " + attacker.tag + " is attacking the Big Chicken!");
+        if (attacker.tag == "Chicken") return;
+
         //print("takedamage");
         if (state != State.DEAD && Time.time - lastTimeHit > INVINCIBILITY_TIME) {
             lastTimeHit = Time.time;
@@ -140,10 +145,11 @@ public class BigChicken : ChickenBase
                 state = State.DEAD;
                 GetComponent<ComeApart>().Execute();
                 GetComponent<FadeParts>().StartFading();
+                Destroy(this, 5.1f);
 
-                //if (chickenSpawner) {             // This avoids double-increments. ChickenOfDeath class also increments kill count.
-                //    chickenSpawner.IncrementKillCount();
-                //}
+                if (chickenSpawner) {
+                    chickenSpawner.IncrementKillCount();
+                }
                 //else {
                 //    print("ChickenSpawner unassigned!");
                 //}

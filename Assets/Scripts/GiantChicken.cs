@@ -2,34 +2,38 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GiantChicken : MonoBehaviour
+public class GiantChicken : ChickenBase
 {
     [SerializeField] GameObject[] eye;
     [SerializeField] GameObject[] laser;
     [SerializeField] GameObject[] leg;
     [SerializeField] GameObject wholeBody;
-    GameObject player;
+    //GameObject player;
     const float adjustment = 1.0f;
-    [SerializeField] GameObject laserImpactEffect;
+    [SerializeField] GameObject laserImpactEfsfect;
     [SerializeField] ParticleSystem smokePrefab;
     [SerializeField] GameObject smokePuff;
+    [SerializeField] float walkSpeed = 1.0f;
 
     ParticleSystem[] smoke;
     bool isLaserActive = false;
     
     const float PI = Mathf.PI;
 
+    bool isAlive = true;
+
     // Start is called before the first frame update
     void Start()
     {
         player = GameObject.Find("Player");
         //wholeBody = transform.Find("Whole Body").gameObject;
-        smoke = new ParticleSystem[2];
+        
+        //smoke = new ParticleSystem[2];
 
-        for (int i = 0; i < 2; i++) {
-            smoke[i] = Instantiate(smokePrefab, new Vector3(0.0f, -30.0f, 0.0f), Quaternion.Euler(-90.0f, 0.0f, 0.0f));
-            smoke[i].Stop();
-        }
+        //for (int i = 0; i < 2; i++) {
+        //    smoke[i] = Instantiate(smokePrefab, new Vector3(0.0f, -30.0f, 0.0f), Quaternion.Euler(-90.0f, 0.0f, 0.0f));
+        //    smoke[i].Stop();
+        //}
 
         //StartCoroutine(InitializeBobVariables());
     }
@@ -38,6 +42,8 @@ public class GiantChicken : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!isAlive) return;
+        
         //transform.Rotate(new Vector3(0.0f, 360.0f, 0.0f) * Time.deltaTime); // It works!!!
 
         TurnEyes();
@@ -92,12 +98,12 @@ public class GiantChicken : MonoBehaviour
         laser[0].gameObject.SetActive(active);
         laser[1].gameObject.SetActive(active);
 
-        if (active) {
-            StartLaserSmoke();
-        }
-        else {
-            StopLaserSmoke();
-        }
+        //if (active) {
+        //    StartLaserSmoke();
+        //}
+        //else {
+        //    StopLaserSmoke();
+        //}
 
         isLaserActive = active;
     }
@@ -141,8 +147,8 @@ public class GiantChicken : MonoBehaviour
 
             foreach (RaycastHit hitinfo in hitinfoList) {
                 if (hitinfo.collider.tag == "Ground") {
-                    //smoke[i].transform.position = hitinfo.point;
-                    StartSmokePuff(hitinfo.point);
+                    
+                    StartSmokePuff(hitinfo.point, i);
                     //print("Laser Impact");
                     break;
                 }
@@ -152,26 +158,26 @@ public class GiantChicken : MonoBehaviour
 
     void StartLaserSmoke()
     {
-        for (int i = 0; i < 2; i++) 
-            if (!smoke[i].isEmitting) 
-                smoke[i].Play();
+        //for (int i = 0; i < 2; i++) 
+        //    if (!smoke[i].isEmitting) 
+        //        smoke[i].Play();
     }
 
     void StopLaserSmoke()
     {
-        for (int i = 0; i < 2; i++)
-            if (smoke[i].isEmitting) 
-                smoke[i].Stop();
+        //for (int i = 0; i < 2; i++)
+        //    if (smoke[i].isEmitting) 
+        //        smoke[i].Stop();
         
     }
 
-    float lastSmokeTimestamp = 0.0f;
-    void StartSmokePuff(Vector3 pos)
+    float[] lastSmokeTimestamp = { 0.0f, 0.0f };
+    void StartSmokePuff(Vector3 pos, int index)
     {
-        //if (Time.time - lastSmokeTimestamp > 0.1f) {
+        if (Time.time - lastSmokeTimestamp[index] > 0.05f) {
             Destroy(Instantiate(smokePuff, pos, Quaternion.identity), 2.1f);
-            lastSmokeTimestamp = Time.time;
-        //}
+            lastSmokeTimestamp[index] = Time.time;
+        }
     }
 
     // Offset eye direction to make lasers move in circles
@@ -213,15 +219,78 @@ public class GiantChicken : MonoBehaviour
 
         //Bob
         float plusMinus = xAngle / Mathf.Abs(xAngle);
-        wholeBody.transform.localPosition = new Vector3(0.0f, amplitude*Mathf.Cos((xAngle * PI / 180f + PI/2)*2), 0.0f); // somehow this works
+        wholeBody.transform.localPosition = new Vector3(0.0f, amplitude * Mathf.Cos((xAngle * PI / 180f + PI / 2) * 2), 0.0f); // somehow this works
+
+        // Walk
+        Vector3 direction = player.transform.position - transform.position;
+        direction.y = 0.0f;
+
+        float distance = direction.magnitude;
+        direction.Normalize();
+        Vector3 taxis = direction * walkSpeed * Time.deltaTime;
+
+        if (distance > walkSpeed) {
+            transform.position = transform.position + taxis;
+        }
+
+        // Turn
+        Vector3 turnTarget = player.transform.position;
+        turnTarget.y = transform.position.y; // set it on same Y as chicken so it will only turn in the XZ plane
+        transform.LookAt(turnTarget);
 
         walkCounter += Time.deltaTime;
     }
 
-    //IEnumerator InitializeBobVariables()
-    //{
-    //    yield return new WaitForSeconds(2.0f);
+    public override void TakeDamage(GameObject attacker)
+    {
+        if (player.GetComponent<PlayerController2>().IsGameOver()) return;
 
-    //    baseY = GetComponent<Rigidbody>().position.y;
-    //}
+        print("A " + attacker.tag + " is attacking the Giant Chicken!");
+        if (attacker.tag == "Chicken") return;
+
+        //print("takedamage");
+        //if (state != State.DEAD && Time.time - lastTimeHit > INVINCIBILITY_TIME) {
+            //lastTimeHit = Time.time;
+            //--life;
+
+            HitPoints hp = GetComponent<HitPoints>(); // a kludge until I think of something better
+            hp.Decrement(); // temporarily 100
+
+            //if (life <= 0) {
+            if (hp.Get() <= 0) {
+                isAlive = false;
+                GetComponent<ComeApart>().Execute();
+                GetComponent<FadeParts>().StartFading();
+                Destroy(gameObject, 5.1f);
+                //Destroy(smoke[0]);
+                //Destroy(smoke[1]);
+
+                if (chickenSpawner) {
+                    chickenSpawner.IncrementKillCount();
+                }
+                //else {
+                //    print("ChickenSpawner unassigned!");
+                //}
+
+                return;
+            }
+
+            // From here on, the chicken is not dead.
+
+            //print("Tag: "+killer.tag);
+            // Let the Chicken Spawner know if the player is the one who is the killer
+            if (attacker.tag == "Player") {
+                //print("Player hit " + name);
+
+
+                Vector3 hitForce = (transform.position - attacker.transform.position);
+                hitForce.Normalize();
+                hitForce.y = 1.0f;
+                hitForce *= 500;
+                GetComponent<Rigidbody>().AddForce(hitForce, ForceMode.Impulse);
+                //print(hitForce);
+
+            }
+        //}
+    }
 }

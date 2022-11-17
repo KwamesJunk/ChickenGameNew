@@ -317,6 +317,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3abe26f4b30cd6b43b99c7ecfb4c1ce0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lifeChickenPrefab: {fileID: 283188555678348944, guid: 9aa2cf4bb8296d943ae38b1382a335e6, type: 3}
   torso: {fileID: 9124388203885393465}
   attackChargeTime: 3
   attackMaterial: {fileID: 2100000, guid: 377c3227ff222fa45abb4126598d7bd9, type: 2}
@@ -358,6 +359,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24548c9bf62162741a080ced54334ff8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hp: 1
+  maxHp: 1
 --- !u!114 &5801411559592004123
 MonoBehaviour:
   m_ObjectHideFlags: 0

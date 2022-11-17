@@ -66,11 +66,18 @@ public class MeteorChicken : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (other.tag == Global.PLAYER_TAG) return; // Temporarily no damage to player
+
         if (Time.time - deadTime < 0.5f) { // only do damage for 0.5s
             HitPoints hp = other.GetComponent<HitPoints>();
             
             if (hp) {
+                print("Meteor Chicken hit!");
                 hp.Decrement(damage);
+                
+                if (other.tag == "Chicken") {
+                    other.GetComponent<ChickenBase>().TakeDamage(gameObject);
+                }
 
                 if (other.tag == Global.PLAYER_TAG) {
                     other.GetComponent<PlayerController2>().OnKnockedDown();
